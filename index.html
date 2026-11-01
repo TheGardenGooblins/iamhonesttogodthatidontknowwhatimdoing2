@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF Voice Reader</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>PDF Voice Reader</h1>
+    <p class="sub">Open a PDF and have it read to you in an anime-style English voice. Runs entirely in your browser; your file never leaves your device.</p>
+  </header>
+
+  <main>
+    <section id="dropzone" class="drop" tabindex="0">
+      <input id="file" type="file" accept="application/pdf" hidden>
+      <p><strong>Drop a PDF here</strong> or <button id="pick" type="button">choose a file</button></p>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="controls" id="controls" hidden>
+      <div class="row">
+        <button id="prev" type="button" title="Previous sentence">⏮</button>
+        <button id="play" type="button" class="primary">▶ Play</button>
+        <button id="next" type="button" title="Next sentence">⏭</button>
+        <button id="stop" type="button" title="Stop">⏹</button>
+      </div>
+      <div class="row opts">
+        <label>Voice engine
+          <select id="engine">
+            <option value="kokoro">Anime-style AI voices (Kokoro, ~90 MB first time)</option>
+            <option value="browser">Built-in browser voice (instant)</option>
+          </select>
+        </label>
+        <label id="voiceWrap">Voice
+          <select id="voice"></select>
+        </label>
+        <label>Speed <output id="speedOut">1.0×</output>
+          <input id="speed" type="range" min="0.6" max="1.6" step="0.1" value="1">
+        </label>
+        <label>Start at page
+          <select id="page"></select>
+        </label>
+      </div>
+      <progress id="load" max="1" value="0" hidden></progress>
+    </section>
+
+    <article id="reader" class="reader" aria-label="PDF text"></article>
+  </main>
+
+  <footer>
+    <p>Voices by <a href="https://huggingface.co/hexgrad/Kokoro-82M">Kokoro-82M</a> (Apache-2.0). Space = play/pause, ← → = previous/next sentence.</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
