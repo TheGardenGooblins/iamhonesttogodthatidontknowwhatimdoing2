@@ -2,7 +2,7 @@
 
 Open a PDF and have it read aloud in an anime-style English voice. Everything runs in your browser; the PDF never leaves your device.
 
-- **Voices:** [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0) via `kokoro-js`, with 20 English voices. The model (~90 MB) downloads once and is cached by the browser. Uses WebGPU when available, otherwise WASM.
+- **Voices:** [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0) via `kokoro-js`, with 20 English voices. The model (~90 MB) downloads once and is cached by the browser. Runs on WASM (quantized q8 build).
 - **Fallback:** a built-in browser voice that starts instantly.
 - **Reading:** the current sentence is highlighted, click any sentence to jump there, pick a start page, change speed.
 - **Keys:** Space = play/pause, ← / → = previous/next sentence.

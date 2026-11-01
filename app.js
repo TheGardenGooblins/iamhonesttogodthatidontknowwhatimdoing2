@@ -187,14 +187,11 @@ function loadKokoro() {
         setStatus(`Downloading voice model… ${(l / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} MB (only the first time)`);
       }
     };
+    setStatus("Loading voice engine…");
     const { KokoroTTS } = await import(KOKORO_URL);
-    let tts;
-    if (navigator.gpu) {
-      try {
-        tts = await KokoroTTS.from_pretrained(MODEL_ID, { dtype: "fp32", device: "webgpu", progress_callback: progress });
-      } catch (e) { console.warn("WebGPU failed, using WASM", e); }
-    }
-    tts ??= await KokoroTTS.from_pretrained(MODEL_ID, { dtype: "q8", device: "wasm", progress_callback: progress });
+    setStatus("Downloading voice model… (about 90 MB, only the first time)");
+    // WASM + q8 is the small, reliable build (WebGPU needs a 300+ MB download and isn't supported everywhere).
+    const tts = await KokoroTTS.from_pretrained(MODEL_ID, { dtype: "q8", device: "wasm", progress_callback: progress });
     el.load.hidden = true;
     return tts;
   })().catch((e) => {
@@ -211,6 +208,7 @@ function getAudioBuffer(i) {
   const speed = Number(el.speed.value);
   const p = (async () => {
     const tts = await loadKokoro();
+    if (i === index) setStatus("Generating speech…");
     const out = await tts.generate(chunks[i].text, { voice, speed });
     const buf = audioCtx.createBuffer(1, out.audio.length, out.sampling_rate);
     buf.copyToChannel(out.audio, 0);
@@ -270,7 +268,7 @@ async function speakLoop(myToken) {
       }
     } catch (err) {
       console.error(err);
-      setStatus(`Voice error: ${err.message || err}. Try the built-in browser voice instead.`);
+      setStatus(`The AI voice failed: ${err.message || err}. Switch "Voice engine" to the built-in browser voice. (Details are in the browser console, F12.)`);
       state = "idle"; setPlayLabel();
       return;
     }
