@@ -210,8 +210,14 @@ function getAudioBuffer(i) {
     const tts = await loadKokoro();
     if (i === index) setStatus("Generating speech…");
     const out = await tts.generate(chunks[i].text, { voice, speed });
-    const buf = audioCtx.createBuffer(1, out.audio.length, out.sampling_rate);
-    buf.copyToChannel(out.audio, 0);
+    const samples = out.audio instanceof Float32Array ? out.audio : Float32Array.from(out.audio ?? []);
+    let peak = 0;
+    for (let k = 0; k < samples.length; k++) peak = Math.max(peak, Math.abs(samples[k]));
+    const buf = audioCtx.createBuffer(1, Math.max(samples.length, 1), out.sampling_rate || 24000);
+    buf.copyToChannel(samples, 0);
+    buf.debug = `${(samples.length / (out.sampling_rate || 24000)).toFixed(1)}s audio, peak ${peak.toFixed(2)}`;
+    console.log(`[tts] chunk ${i}: ${buf.debug}, rate ${out.sampling_rate}`);
+    if (samples.length === 0 || peak < 0.001) throw new Error("the model returned silence (empty audio)");
     return buf;
   })();
   audioCache.set(i, p);
@@ -247,7 +253,7 @@ async function speakLoop(myToken) {
         const buf = await getAudioBuffer(i);
         if (myToken !== token) return;
         if (i + 1 < chunks.length) getAudioBuffer(i + 1).catch(() => {}); // prefetch next while this one plays
-        setStatus(`Page ${chunks[i].page} · sentence ${i + 1}/${chunks.length}`);
+        setStatus(`Page ${chunks[i].page} · sentence ${i + 1}/${chunks.length} · ${buf.debug} · audio ${audioCtx.state}`);
         await new Promise((resolve) => {
           const src = audioCtx.createBufferSource();
           src.buffer = buf;
